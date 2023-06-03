@@ -1,7 +1,7 @@
 .section .rodata
 
     menu:
-	.ascii "=== MENU ===\n"
+	.ascii "\033[2J=== MENU ===\n"
 
     on:
 	.ascii "ON"
@@ -38,11 +38,11 @@
 	# Sposto in %edi l'indice della voce da mostrare
 	movl %eax, %edi
 	
-	# Stampo la scritta "MENU"
+	# Pulisco lo schermo e stampo la scritta "MENU"
 	movl $4, %eax
 	movl $1, %ebx
 	movl $menu, %ecx
-	movl $13, %edx
+	movl $17, %edx
 	int $0x80
 
 	# Carico in %eax l'indirizzo del vettore con i puntatori alle voci del menu

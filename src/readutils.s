@@ -12,6 +12,9 @@
     newline:
 	.ascii "\012\000\000\000"
 
+    quit:
+	.ascii "q\012\000\000"
+
 .section .text
 
     .global readutils__getcommand
@@ -61,8 +64,17 @@
 	movl $newline, %edi
 	# Confronto le due stringhe puntate da %esi e %edi
 	cmpsl
-	# Se sono uguali l'utente ha inserito GIÙ: vado alla voce precedente
+	# Se sono uguali l'utente ha inserito newline: vado alla voce precedente
 	je newlinein
+
+	# Copio l'indirizzo dell'input in %esi per effettuare il confronto
+	movl %ecx, %esi
+	# Carico in %edi l'indirizzo ove è memorizzata la sequenza di escape per l'uscita
+	movl $quit, %edi
+	# Confronto le due stringhe puntate da %esi e %edi
+	cmpsl
+	# Se sono uguali l'utente ha inserito la sequenza di uscita: vado alla voce precedente
+	je quitin
 
 	# Nel caso in cui nessun comando valido sia stato inserito, azzero %eax e ritorno
 	xorl %eax, %eax
@@ -79,4 +91,7 @@
 	    ret
 	newlinein:
 	    movl $4, %eax
+	    ret
+	quitin:
+	    movl $5, %eax
 	    ret

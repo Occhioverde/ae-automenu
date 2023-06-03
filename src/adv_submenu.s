@@ -3,30 +3,47 @@
     submenu:
 	.ascii "\033[2J=== SUBMENU ===\n"
 
-    on:
-	.ascii "ON"
-    off:
-	.ascii "OFF"
-    onoffarr:
-	.long off, on
-    onofflens:
-	.long 3, 2
-
+    resetok:
+	.ascii "Pressione gomme resettata"
     
 .section .text
 
-    .global submenu__display_menu
+    .global submenu_adv__display_menu
 
-    submenu__display_menu:
-	# Trasformo l'indice del menu nel valore di spiazzamento dello stack (4 = Blocco porte, 8 = Back home) e lo carico in %edi
-	subl $2, %eax
-	movl $4, %ebx
-	mull %ebx
-	movl %eax, %edi
-	# Carico in %esi il valore di partenza della configurazione
-	movl (%esp, %edi, 1), %esi
-	# Metto sullo stack lo spiazzamento calcolato per riutilizzarlo in fase di salvataggio
-	pushl %edi
+    submenu_adv__display_menu:
+	# Carico in %esi il numero attuale di lampeggi
+	movl 4(%esp), %esi
+
+	# Verifico se devo mostrare il menu delle frecce
+	movl $6, %ebx # 6 = Menu frecce direzionali
+	cmp %eax, %ebx
+	je printloop
+
+	# Pulisco lo schermo e stampo la scritta "SUBMENU"
+	movl $4, %eax
+	movl $1, %ebx
+	movl $submenu, %ecx
+	movl $20, %edx
+	int $0x80
+
+	# Stampo la scritta di conferma del reset
+	movl $4, %eax
+	movl $1, %ebx
+	movl $resetok, %ecx
+	movl $25, %edx
+	int $0x80
+
+	# Preparo un buffer sullo stack
+	subl $4, %esp
+	# Ne salvo l'indirizzo in %eax
+	movl %esp, %eax
+	# Recupero il comando
+	call readutils__getcommand # PARAMS: %eax => Indirizzo del buffer
+	                           # RETURN: %eax => Numero del comando
+	# Elimino il buffer
+	addl $4, %esp
+	# Esco dal submenu
+	ret
 
     printloop:
 	# Pulisco lo schermo e stampo la scritta "SUBMENU"
@@ -36,13 +53,18 @@
 	movl $20, %edx
 	int $0x80
 
-	movl $onoffarr, %eax
-	movl $onofflens, %ebx
-	movl (%eax, %esi, 4), %ecx
-	movl (%ebx, %esi, 4), %edx
+	# Calcolo il codice ASCII dell'attuale numero di lampeggi
+	movl %esi, %ecx
+	addl $48, %ecx
+	# Lo salvo in RAM
+	pushl %ecx
+	# E lo stampo a schermo
 	movl $4, %eax
 	movl $1, %ebx
+	movl %esp, %ecx
+	movl $1, %edx
 	int $0x80
+	addl $4, %esp
 
 	# Salvo %esi che sarà modificato da readutils
 	pushl %esi
@@ -75,24 +97,23 @@
 	jmp printloop
 
 	goup:
-	    xorl %eax, %eax
+	    movl $2, %eax
 	    cmpl %esi, %eax
 	    je cycledown
 	    subl $1, %esi
 	    jmp printloop
 	cycledown:
-	    movl $1, %esi
+	    movl $5, %esi
 	    jmp printloop
 	godown:
-	    movl $1, %eax
+	    movl $5, %eax
 	    cmpl %esi, %eax
 	    je cycleup
 	    addl $1, %esi
 	    jmp printloop
 	cycleup:
-	    xorl %esi, %esi
+	    movl $2, %esi
 	    jmp printloop
 	savesetting:
-	    popl %edi
-	    movl %esi, (%esp, %edi, 1)
+	    movl %esi, 4(%esp)
 	    ret

@@ -1,8 +1,7 @@
 .section .rodata
 
-    clear:
-	# Sequenza di pulizia "^[2J" ("\033" = ESC in ottale)
-	.ascii "\033[2J"
+    admincode:
+	.ascii "2244"
 
 .section .bss
 
@@ -18,24 +17,35 @@
     stato_backhome:
 	.long 0
 
+.section .data
+
+    stato_freccedirezione:
+	.long 3
+
 .section .text
 
     .global _start
-    .extern print_voce # Importato da src/print_voce.s
 
     _start:
-	# Preparo dello spazio nello stack
-	subl $4, %esp
+	# Verifico che ci sia ESATTAMENTE un parametro (il codice supervisor)
+	movl (%esp), %eax
+	movl $2, %ebx
+	# Se ci sono più o meno di due parametri, entro come utente
+	cmpl %eax, %ebx
+	jne printloop
+	
+	# Preparo il codice di sicurezza per il controllo
+	movl 8(%esp), %edi
+	movl $admincode, %esi
+	# Controllo l'inserimento del codice supervisor
+	cmpsl
+	# Se è errato, entro come utente
+	jne printloop
 
+	# Altrimenti, entro come supervisiore
+	movl $1, supervisor_mode
 
     printloop:
-	# Pulisco il terminale inviando la apposita sequenza attraverso la syscall write.
-	movl $4, %eax
-	movl $1, %ebx
-	movl $clear, %ecx
-	movl $4, %edx
-	int $0x80
-
 	# Recupero il valore di curr_voce per decidere la voce da mostrare e lo carico in %edi per print_voce
 	movl curr_voce, %eax
 	pushl stato_backhome
@@ -44,13 +54,26 @@
 	                          #         %esp => Stato del back home
 				  #         %esp+4 => Stato del blocco delle porte
 
-	# Leggo il comando
+	# Creo un buffer per l'input sullo stack
+	subl $4, %esp
+	# Ne copio l'indirizzo su %eax
 	movl %esp, %eax
+	# Leggo il comando
 	call readutils__getcommand # PARAMS: %eax => Indirizzo del buffer
 	                           # RETURN: %eax => Numero del comando
+	# Elimino il buffer
+	addl $4, %esp
+
+	# Se l'utente ha inserito una sequenza non riconosciuta, ignoro l'input
+	xorl %ebx, %ebx
+	cmpl %eax, %ebx
+	je printloop
+	
+	# Altrimenti, decodifico l'input
 	movl $1, %ebx # UP = 1
 	movl $2, %ecx # DOWN = 2
 	movl $3, %edx # RIGHT = 3
+	movl $5, %edi # Quit = 5
 	cmpl %eax, %ebx
 	je prevvoce
 	cmpl %eax, %ecx
@@ -58,6 +81,9 @@
 	cmpl %eax, %edx
 	je entersubmenu
 
+	# Se l'utente non ha inserito la sequenza di uscita, ignoro l'input
+	cmpl %eax, %edi
+	jne printloop
 	# Se nessuno dei due tasti è stato premuto:
 	# System call di uscita (syscall exit)
 	movl $1, %eax
@@ -117,23 +143,37 @@
 	movl curr_voce, %eax
 	movl $3, %ebx # Blocco porte = 3
 	cmpl %eax, %ebx
-	je doentersubmenu
+	je onoff_submenu
 	movl $4, %ebx # Back home = 4
 	cmpl %eax, %ebx
-	je doentersubmenu
-	jmp noentersubmenu
+	je onoff_submenu
+	movl $6, %ebx # Back home = 4
+	cmpl %eax, %ebx
+	je adv_submenu
+	movl $7, %ebx # Back home = 4
+	cmpl %eax, %ebx
+	je adv_submenu
+	jmp nosubmenu
 
-	doentersubmenu:
-	    # Entro nel submenu
+	onoff_submenu:
+	    # Entro nel submenu ON/OFF
 	    pushl stato_backhome
 	    pushl stato_bloccoporte
-	    call submenu__display_menu # PARAMS: %eax => ID del menu da mostrare
-	                             #         %esp => Stato del back home
-	                             #         %esp+4 => Stato del blocco delle porte
+	    call submenu_onoff__display_menu # PARAMS: %eax => ID del menu da mostrare
+	                                     #         %esp => Stato del back home
+	                                     #         %esp+4 => Stato del blocco delle porte
 	    popl %eax
 	    movl %eax, stato_bloccoporte
 	    popl %eax
 	    movl %eax, stato_backhome
-	noentersubmenu:
+	    jmp printloop
+	adv_submenu:
+	    # Entro nel submenu avanzato
+	    pushl stato_freccedirezione
+	    call submenu_adv__display_menu # PARAMS: %eax => ID del menu da mostrare
+	                                   #         %esp => Stato delle frecce di direzione
+	    popl %eax
+	    movl %eax, stato_freccedirezione
+	nosubmenu:
 	    # Torno in cima al printloop
 	    jmp printloop
