@@ -36,25 +36,16 @@
 	movl $20, %edx
 	int $0x80
 
-	movl $onoffarr, %eax
-	movl $onofflens, %ebx
-	movl (%eax, %esi, 4), %ecx
-	movl (%ebx, %esi, 4), %edx
 	movl $4, %eax
 	movl $1, %ebx
+	movl onoffarr(, %esi, 4), %ecx
+	movl onofflens(, %esi, 4), %edx
 	int $0x80
 
 	# Salvo %esi che sarà modificato da readutils
 	pushl %esi
-	# Preparo un buffer sullo stack
-	subl $4, %esp
-	# Ne salvo l'indirizzo in %eax
-	movl %esp, %eax
-	# Recupero il comando
-	call readutils__getcommand # PARAMS: %eax => Indirizzo del buffer
-	                           # RETURN: %eax => Numero del comando
-	# Elimino il buffer
-	addl $4, %esp
+	# Leggo il comando
+	call readutils__getcommand # RETURN: %eax => Numero del comando
 	# Recupero il valore di %esi
 	popl %esi
 	

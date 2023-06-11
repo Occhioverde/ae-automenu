@@ -1,3 +1,9 @@
+## File auto_menu.s
+##
+## Entrypoint del programma. Contiene il loop principale.
+##
+## Ghellere Nicolò, Milli Manuel, Riccardo Sacchetto
+    
 .section .rodata
 
     admincode:
@@ -54,15 +60,8 @@
 	                          #         %esp => Stato del back home
 				  #         %esp+4 => Stato del blocco delle porte
 
-	# Creo un buffer per l'input sullo stack
-	subl $4, %esp
-	# Ne copio l'indirizzo su %eax
-	movl %esp, %eax
 	# Leggo il comando
-	call readutils__getcommand # PARAMS: %eax => Indirizzo del buffer
-	                           # RETURN: %eax => Numero del comando
-	# Elimino il buffer
-	addl $4, %esp
+	call readutils__getcommand # RETURN: %eax => Numero del comando
 
 	# Se l'utente ha inserito una sequenza non riconosciuta, ignoro l'input
 	xorl %ebx, %ebx

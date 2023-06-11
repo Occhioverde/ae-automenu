@@ -7,6 +7,10 @@
 	.ascii "ON"
     off:
 	.ascii "OFF"
+    onoffarr:
+	.long off, on
+    onofflens:
+	.long 3, 2
 
     voce1:
 	.ascii "Setting automobile:"
@@ -79,18 +83,8 @@
 	    movl $4, %eax
 	    movl $1, %ebx
 	    movl (%esp, %esi, 1), %esi
-	    movl $0, %edi
-	    cmpl %esi, %edi
-	    je printoff
-	    # Stampo la scritta "ON"
-	    movl $on, %ecx
-	    movl $2, %edx
-	    int $0x80
-	    jmp doret
-	printoff:
-	    # Stampo la scritta "OFF"
-	    movl $off, %ecx
-	    movl $3, %edx
+	    movl onoffarr(, %esi, 4), %ecx
+	    movl onofflens(, %esi, 4), %edx
 	    int $0x80
 
 	doret:

@@ -22,7 +22,8 @@
     readutils__getcommand:
 
 	# Sposto l'indirizzo del buffer in %ecx e lo svuoto
-	movl %eax, %ecx
+	subl $4, %esp
+	movl %esp, %ecx
 	movl $0, (%ecx)
 	
 	# Leggo l'input
@@ -78,20 +79,23 @@
 
 	# Nel caso in cui nessun comando valido sia stato inserito, azzero %eax e ritorno
 	xorl %eax, %eax
-	ret
+	jmp exit
 
 	uparrw:
 	    movl $1, %eax
-	    ret
+	    jmp exit
 	downarrw:
 	    movl $2, %eax
-	    ret
+	    jmp exit
 	rightarrw:
 	    movl $3, %eax
-	    ret
+	    jmp exit
 	newlinein:
 	    movl $4, %eax
-	    ret
+	    jmp exit
 	quitin:
 	    movl $5, %eax
-	    ret
+
+    exit:
+	addl $4, %esp
+	ret

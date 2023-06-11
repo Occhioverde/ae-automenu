@@ -33,15 +33,8 @@
 	movl $25, %edx
 	int $0x80
 
-	# Preparo un buffer sullo stack
-	subl $4, %esp
-	# Ne salvo l'indirizzo in %eax
-	movl %esp, %eax
-	# Recupero il comando
-	call readutils__getcommand # PARAMS: %eax => Indirizzo del buffer
-	                           # RETURN: %eax => Numero del comando
-	# Elimino il buffer
-	addl $4, %esp
+	# Leggo il comando
+	call readutils__getcommand # RETURN: %eax => Numero del comando
 	# Esco dal submenu
 	ret
 
@@ -68,15 +61,8 @@
 
 	# Salvo %esi che sarà modificato da readutils
 	pushl %esi
-	# Preparo un buffer sullo stack
-	subl $4, %esp
-	# Ne salvo l'indirizzo in %eax
-	movl %esp, %eax
-	# Recupero il comando
-	call readutils__getcommand # PARAMS: %eax => Indirizzo del buffer
-	                           # RETURN: %eax => Numero del comando
-	# Elimino il buffer
-	addl $4, %esp
+	# Leggo il comando
+	call readutils__getcommand # RETURN: %eax => Numero del comando
 	# Recupero il valore di %esi
 	popl %esi
 	
