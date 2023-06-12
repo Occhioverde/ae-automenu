@@ -13,7 +13,7 @@
 	.long 3, 2
 
     voce1:
-	.ascii "Setting automobile:"
+	.ascii "Setting automobile"
     voce2:
 	.ascii "Data: 15/06/2014"
     voce3:
@@ -30,9 +30,18 @@
 	.ascii "Reset pressione gomme"
     voci_menu:
 	.long voce1, voce2, voce3, voce4, voce5, voce6, voce7, voce8
-
     len_voci:
-	.long 19, 16, 10, 25, 11, 10, 16, 21
+	.long 18, 16, 10, 25, 11, 10, 16, 21
+
+    std_notice:
+	.ascii ":"
+    sup_notice:
+	.ascii " (Supervisor):"
+    notices:
+	.long std_notice, sup_notice
+    len_notices:
+	.long 1, 14
+
 
 .section .text
 
@@ -49,20 +58,19 @@
 	movl $17, %edx
 	int $0x80
 
-	# Carico in %eax l'indirizzo del vettore con i puntatori alle voci del menu
-	movl $voci_menu, %eax
-	# Carico in %ebx l'indirizzo del vettore delle lunghezze delle voci
-	movl $len_voci, %ebx
-	# La voce si trova all'indirizzo puntato da %eax + 4*%edi
-	movl (%eax, %edi, 4), %ecx
-	# La lunghezza della voce è puntata da %ebx + 4*%edi
-	movl (%ebx, %edi, 4), %edx
+	# La voce si trova all'indirizzo puntato da voci_menu + 4*%edi
+	movl voci_menu(, %edi, 4), %ecx
+	# La lunghezza della voce è puntata da len_voci + 4*%edi
+	movl len_voci(, %edi, 4), %edx
 
 	# Stampo la voce richiesta
 	movl $4, %eax
 	movl $1, %ebx
 	int $0x80
 
+	movl $0, %esi
+	cmpl %edi, %esi
+	je print_notice
 	movl $3, %esi
 	cmpl %edi, %esi
 	je print_statobloccoporte
@@ -71,13 +79,21 @@
 	je print_statobackhome
 	ret
 
+	print_notice:
+	    movl $4, %eax
+	    movl $1, %ebx
+	    movl 12(%esp), %esi
+	    movl notices(, %esi, 4), %ecx
+	    movl len_notices(, %esi, 4), %edx
+	    int $0x80
+	    ret
+
 	print_statobloccoporte:
 	    movl $4, %esi
 	    jmp printstato
 
 	print_statobackhome:
 	    movl $8, %esi
-	    jmp printstato
 
 	printstato:
 	    movl $4, %eax
@@ -86,7 +102,5 @@
 	    movl onoffarr(, %esi, 4), %ecx
 	    movl onofflens(, %esi, 4), %edx
 	    int $0x80
-
-	doret:
 	    ret
 	

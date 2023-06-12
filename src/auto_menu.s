@@ -54,11 +54,13 @@
     printloop:
 	# Recupero il valore di curr_voce per decidere la voce da mostrare e lo carico in %edi per print_voce
 	movl curr_voce, %eax
+	pushl supervisor_mode
 	pushl stato_backhome
 	pushl stato_bloccoporte
 	call mainmenu__print_voce # PARAMS: %eax => Indice della voce da mostrare
-	                          #         %esp => Stato del back home
-				  #         %esp+4 => Stato del blocco delle porte
+	                          #         %esp => Stato del blocco delle porte
+				  #         %esp+4 => Stato del back-home
+				  #         %esp+8 => Stato della modalità supervisor
 
 	# Leggo il comando
 	call readutils__getcommand # RETURN: %eax => Numero del comando

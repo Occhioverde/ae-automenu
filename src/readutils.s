@@ -18,9 +18,9 @@
 .section .text
 
     .global readutils__getcommand
+    .global readutils__getnum
     
     readutils__getcommand:
-
 	# Sposto l'indirizzo del buffer in %ecx e lo svuoto
 	subl $4, %esp
 	movl %esp, %ecx
@@ -95,6 +95,38 @@
 	    jmp exit
 	quitin:
 	    movl $5, %eax
+	    jmp exit
+
+    readutils__getnum:
+	# Sposto l'indirizzo del buffer in %ecx e lo svuoto
+	subl $4, %esp
+	movl %esp, %ecx
+	movl $0, (%ecx)
+	
+	# Leggo l'input
+	movl $3, %eax
+	movl $0, %ebx
+	movl $2, %edx
+	int $0x80 # %eax = 3 => SYS_READ(%ebx = 0 => STDIN, %ecx => Indirizzo del buffer, %edx = 2 => Byte da leggere)
+
+	# Recupero la cifra
+	movzxb (%ecx), %eax
+	# Recupero i limiti nel codice ASCII
+	movl $48, %ebx # 0 := 48 ASCII
+	movl $57, %ecx # 9 := 57 ASCII
+	# Verifico che il valore inserito non li superi
+	cmpl %ebx, %eax
+	jl nan
+	cmpl %ecx, %eax
+	jg nan
+
+	# Converto il codice ASCII in numero
+	subl $48, %eax
+	jmp exit
+
+	nan:
+	    # Il valore inserito non è un numero; ritorno 0
+	    xorl %eax, %eax
 
     exit:
 	addl $4, %esp

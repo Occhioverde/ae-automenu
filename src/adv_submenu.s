@@ -5,6 +5,12 @@
 
     resetok:
 	.ascii "Pressione gomme resettata"
+
+    msglampaggi:
+	.ascii "Una cifra; minimo 2, massimo 5:\n"
+
+    arrow:
+	.ascii " => "
     
 .section .text
 
@@ -17,7 +23,7 @@
 	# Verifico se devo mostrare il menu delle frecce
 	movl $6, %ebx # 6 = Menu frecce direzionali
 	cmp %eax, %ebx
-	je printloop
+	je reqlampeggi
 
 	# Pulisco lo schermo e stampo la scritta "SUBMENU"
 	movl $4, %eax
@@ -38,68 +44,56 @@
 	# Esco dal submenu
 	ret
 
-    printloop:
+    reqlampeggi:
 	# Pulisco lo schermo e stampo la scritta "SUBMENU"
 	movl $4, %eax
 	movl $1, %ebx
 	movl $submenu, %ecx
 	movl $20, %edx
 	int $0x80
+	# Stampo il messaggio con le istruzioni
+	movl $4, %eax
+	movl $1, %ebx
+	movl $msglampaggi, %ecx
+	movl $32, %edx
+	int $0x80
 
 	# Calcolo il codice ASCII dell'attuale numero di lampeggi
 	movl %esi, %ecx
 	addl $48, %ecx
-	# Lo salvo in RAM
+	# ...lo salvo in RAM
 	pushl %ecx
-	# E lo stampo a schermo
+	# ...e lo stampo a schermo
 	movl $4, %eax
 	movl $1, %ebx
 	movl %esp, %ecx
 	movl $1, %edx
 	int $0x80
 	addl $4, %esp
+	# Stampo una freccetta
+	movl $4, %eax
+	movl $1, %ebx
+	movl $arrow, %ecx
+	movl $4, %edx
+	int $0x80
 
-	# Salvo %esi che sarà modificato da readutils
-	pushl %esi
-	# Leggo il comando
-	call readutils__getcommand # RETURN: %eax => Numero del comando
-	# Recupero il valore di %esi
-	popl %esi
+	# Leggo il nuovo numero di lampaggi
+	call readutils__getnum # RETURN: %eax => Numero inserito dall'utente
 	
 	# Carico i valori di controllo
-	movl $1, %ebx # 1 = UP
-	movl $2, %ecx # 2 = DOWN
-	movl $4, %edx # 3 = ENTER
-	# Se l'utente ha inserito UP
-	cmpl %eax, %ebx
-	je goup
-	# Se l'utente ha inserito DOWN
-	cmpl %eax, %ecx
-	je godown
-	# Se l'utente ha inserito ENTER
-	cmpl %eax, %edx
-	je savesetting
-	# Se l'input non è valido, lo ignoro
-	jmp printloop
+	movl $2, %ebx # 2 = Minimo numero di lampeggi
+	movl $5, %ecx # 5 = Massimo numero di lampeggi
+	cmpl %ebx, %eax
+	jl applyminimo
+	cmpl %ecx, %eax
+	jg applymassimo
 
-	goup:
-	    movl $2, %eax
-	    cmpl %esi, %eax
-	    je cycledown
-	    subl $1, %esi
-	    jmp printloop
-	cycledown:
-	    movl $5, %esi
-	    jmp printloop
-	godown:
-	    movl $5, %eax
-	    cmpl %esi, %eax
-	    je cycleup
-	    addl $1, %esi
-	    jmp printloop
-	cycleup:
-	    movl $2, %esi
-	    jmp printloop
 	savesetting:
-	    movl %esi, 4(%esp)
+	    movl %eax, 4(%esp)
+	    ret
+	applyminimo:
+	    movl $2, 4(%esp)
+	    ret
+	applymassimo:
+	    movl $5, 4(%esp)
 	    ret
