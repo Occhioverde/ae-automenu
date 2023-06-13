@@ -159,13 +159,13 @@ int main(int argc, char **argv) {
   _Bool supervisor_mode = 0, stato_bloccoporte = 0, stato_backhome = 0;
 
   // Verifico che ci sia ESATTAMENTE un parametro (il codice supervisor)
-  if (argc == 2) {
-    // Controllo l'inserimento del codice supervisor
-    if (!strncmp("2244", argv[1], 4)) {
-      // Se è ccorretto, entro come supervisiore
-      supervisor_mode = 1;
-    }
-  }
+  if (argc == 2)
+    // Controllo che il codice supervisor sia lungo ESATTAMENTE 4 caratteri
+    if (argv[1][4] == 0)
+      // Controllo l'inserimento del codice supervisor
+      if (!strncmp("2244", argv[1], 4))
+	// Se è corretto, entro come supervisiore
+	supervisor_mode = 1;
 
   while (1) {
     // Stampo a schermo la voce da mostrare

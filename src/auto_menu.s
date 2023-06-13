@@ -39,9 +39,15 @@
 	# Se ci sono più o meno di due parametri, entro come utente
 	cmpl %eax, %ebx
 	jne printloop
-	
+
 	# Preparo il codice di sicurezza per il controllo
 	movl 8(%esp), %edi
+	# Carico il quinto byte del codice inserito dall'utente per assicurami della lunghezza
+	movzxb 4(%edi), %eax
+	xorl %ebx, %ebx
+	cmpl %eax, %ebx
+	jne printloop # Il codice inserito è più lungo di 4 caratteri
+	# Carico il codice di riferimento
 	movl $admincode, %esi
 	# Controllo l'inserimento del codice supervisor
 	cmpsl
