@@ -1,7 +1,7 @@
 .section .rodata
 
     submenu:
-	.ascii "\033[2J=== SUBMENU ===\n"
+	.ascii "\033[1;1H\033[2J=== SUBMENU ===\n"
 
     on:
 	.ascii "ON"
@@ -33,7 +33,7 @@
 	movl $4, %eax
 	movl $1, %ebx
 	movl $submenu, %ecx
-	movl $20, %edx
+	movl $26, %edx
 	int $0x80
 
 	movl $4, %eax

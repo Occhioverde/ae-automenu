@@ -1,7 +1,7 @@
 .section .rodata
 
     menu:
-	.ascii "\033[2J=== MENU ===\n"
+	.ascii "\033[1;1H\033[2J=== MENU ===\n"
 
     on:
 	.ascii "ON"
@@ -55,7 +55,7 @@
 	movl $4, %eax
 	movl $1, %ebx
 	movl $menu, %ecx
-	movl $17, %edx
+	movl $23, %edx
 	int $0x80
 
 	# La voce si trova all'indirizzo puntato da voci_menu + 4*%edi

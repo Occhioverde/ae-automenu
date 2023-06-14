@@ -4,7 +4,7 @@
 void mainmenu__print_voce(int curr_voce, _Bool stato_bloccoporte,
 			  _Bool stato_backhome, _Bool supervisor_mode) {
   // Header del Menu
-  char *menu = "\033[2J=== MENU ===\n";
+  char *menu = "\033[1;1H\033[2J=== MENU ===\n";
   // Array di voci del menu (e relative lunghezze)
   char *voci_menu[] = {
       "Setting automobile",       "Data: 15/06/2014",     "Ora: 15:32",
@@ -19,7 +19,7 @@ void mainmenu__print_voce(int curr_voce, _Bool stato_bloccoporte,
   int len_notices[] = {1, 14};
 
   // Pulisco lo schermo e stampo la scritta "MENU"
-  (void)!write(1, menu, 17);
+  (void)!write(1, menu, 23);
 
   // Stampo la voce attuale
   (void)!write(1, voci_menu[curr_voce], len_voci[curr_voce]);
@@ -76,7 +76,7 @@ int readutils__getnum() {
 void submenu_onoff__display_menu(int menuid, _Bool *stato_bloccoporte,
 				 _Bool *stato_backhome) {
   // Header del Submenu
-  char *submenu = "\033[2J=== SUBMENU ===\n";
+  char *submenu = "\033[1;1H\033[2J=== SUBMENU ===\n";
   // Array di diciture on/off (e relative lunghezze)
   char *onoffarr[] = {"OFF", "ON"};
   int onofflens[] = {3, 2};
@@ -91,7 +91,7 @@ void submenu_onoff__display_menu(int menuid, _Bool *stato_bloccoporte,
 
   while (1) {
     // Pulisco lo schermo e stampo la scritta "SUBMENU"
-    (void)!write(1, submenu, 20);
+    (void)!write(1, submenu, 26);
 
     // Stampo la voce attuale
     (void)!write(1, onoffarr[*stato_voce], onofflens[*stato_voce]);
@@ -112,14 +112,14 @@ void submenu_onoff__display_menu(int menuid, _Bool *stato_bloccoporte,
 
 void submenu_adv__display_menu(int menuid, int *stato_freccedirezione) {
   // Header del Submenu e stringhe varie
-  char submenu[] = "\033[2J=== SUBMENU ===\n", msglampeggi[] = "Una cifra; minimo 2, massimo 5:\n", arrow[] = " => ";
+  char submenu[] = "\033[1;1H\033[2J=== SUBMENU ===\n", msglampeggi[] = "Una cifra; minimo 2, massimo 5:\n", arrow[] = " => ";
 
   // Se non è stato aperto il menu della voce 6 (numero lampeggi)
   if (menuid != 6) {
     // Dicitura reset riuscito
     char *resetok = "Pressione gomme resettata";
     // Pulisco lo schermo e stampo la scritta "SUBMENU"
-    (void)!write(1, submenu, 20);
+    (void)!write(1, submenu, 26);
     // Stampo la scritta di conferma del reset
     (void)!write(1, resetok, 25);
     // Attendo l'input
@@ -129,7 +129,7 @@ void submenu_adv__display_menu(int menuid, int *stato_freccedirezione) {
   }
 
   // Pulisco lo schermo e stampo la scritta "SUBMENU"
-  (void)!write(1, submenu, 20);
+  (void)!write(1, submenu, 26);
 
   // Stampo il messaggio con le istruzioni
   (void)!write(1, msglampeggi, 32);

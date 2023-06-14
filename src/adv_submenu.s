@@ -1,7 +1,7 @@
 .section .rodata
 
     submenu:
-	.ascii "\033[2J=== SUBMENU ===\n"
+	.ascii "\033[1;1H\033[2J=== SUBMENU ===\n"
 
     resetok:
 	.ascii "Pressione gomme resettata"
@@ -29,7 +29,7 @@
 	movl $4, %eax
 	movl $1, %ebx
 	movl $submenu, %ecx
-	movl $20, %edx
+	movl $26, %edx
 	int $0x80
 
 	# Stampo la scritta di conferma del reset
@@ -49,7 +49,7 @@
 	movl $4, %eax
 	movl $1, %ebx
 	movl $submenu, %ecx
-	movl $20, %edx
+	movl $26, %edx
 	int $0x80
 	# Stampo il messaggio con le istruzioni
 	movl $4, %eax
