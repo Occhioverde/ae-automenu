@@ -11,7 +11,7 @@
 \usepackage{enumitem}
 %\usepackage{ragged2e}
 %\usepackage{tabularx}
-%\usepackage{graphicx}
+\usepackage{graphicx}
 
 % Metadati per il titolo
 \author{Ghellere Nicolò (VR486914), Milli Manuel (VR488346),\\Sacchetto Riccardo (VR485898)}
@@ -20,7 +20,7 @@
 \subtitle{Elaborato ASM - Relazione}
 
 % Cartella delle immagini
-%\graphicspath{ {./img/} }
+\graphicspath{ {./img/} }
 
 
 % ===== Inizio del documento =====
@@ -38,7 +38,7 @@
 
 Lo scopo del programma descritto in questa relazione, che d'adesso in avanti verrà semplicemente chiamato ``auto\_menu'', è di riprodurre le funzioni di un menù di configurazione di un'automobile, mostrando data, ora, blocco automatico delle porte, back-home e check dell'olio.
 
-Nell'implementazione qui descritta, in particolare, lo stato del blocco porte e del back-home possono essere variate da on a off e viceversa, mentre avviare il programma specificando il codice ``2244'' consente di entrare in modalità supervisor e variare il numero di lampeggi delle frecce di direzione ed effettuare il reset della pressione degli pneumatici.
+Nell'implementazione qui descritta, in particolare, lo stato del blocco porte e del back-home possono essere variate da on a off e viceversa, mentre avviare il programma specificando il codice ``2244'' da riga di comando consente di entrare in modalità supervisor e variare il numero di lampeggi delle frecce di direzione ed effettuare il reset della pressione degli pneumatici.
 
 \section[nonumber=true]{Messaggi, comandi ed esperienza utente}
 
@@ -86,7 +86,7 @@ Il codice sorgente di auto\_menu è dotato di un Makefile in grado di compilare 
 
 \section[nonumber=true]{Compilazione con Make}
 
-Il target predefinito è Release, che produce tutti gli artefatti possibili senza includervi i simboli di debug. Pertanto, per ottenere un binario utilizzabile è sufficiente eseguire il comando \texttt{make} nella root del progetto.
+Il target predefinito è Release, che produce tutti gli artefatti possibili (\texttt{bin/auto\_menu} per la versione Assembly e \texttt{bin/auto\_menu-c} per la versione C) senza includervi i simboli di debug. Pertanto, per ottenere un binario utilizzabile, è sufficiente eseguire il comando \texttt{make} nella root del progetto.
 
 Per ottenere una versione di debug compatibile con GDB, invece, sarà necessario ricorrere al target Debug con \texttt{make debug}.
 
@@ -99,9 +99,9 @@ La struttura delle cartelle del progetto è così definita:
 \begin{verbatim}
   /
   |- /bin
-  |  |- [File eseguibili prodotti da Make]
+  |  |- [Riservata ai file eseguibili prodotti da Make]
   |- /obj
-  |  |- [File oggetto intermedi prodotti da Make]
+  |  |- [Riservata ai file oggetto intermedi prodotti da Make]
   |- /src
   |  |- *.s [Sorgenti della versione Assembly]
   |  |- auto_menu.c [Sorgente della versione C]
@@ -202,16 +202,23 @@ Ognuno dei file sorgente include alcune costanti e variabili locali necessarie a
   \end{itemize}
 \end{itemize}
 
+\chapter[nonumber=true]{Flowchart}
+
+\begin{center}
+\includegraphics[height=17.8cm]{Flowchart auto_menu.drawio}
+\end{center}
+
 \chapter[nonumber=true]{Scelte progettuali}
 
 L'implementazione del menù di configurazione dell'automobile descritta in queste pagine contiene alcune scelte progettuali operate con il fine di semplificare il codice sorgente, ridurre il codice duplicato e risparmiare memoria:
 
 \begin{itemize}
 \item L'impostazione grafica del menù è pensata per ricordare quanto più possibile quello (realmente esistente) della Lancia Ypsilon di II Generazione (tipo 843). Eccezion fatta per il menù di cambio del numero di lampeggiamenti, quindi, tutte le interfacce sono distribuite su due righe con l'header sulla superiore e l'inferiore dedicata a mostrare (a rotazione) le voci selezionate.
+\item Il programma è pensato per gestire solo e soltanto gli input previsti dalle specifiche. Per quanto si sia tentato di gestire alcune eccezioni, non si garantisce il corretto funzionamento a fronte dell'inserimento di stringhe diverse da quelle esplicitamente supportate.
+\item Il programma verifica il codice supervisore solo se questo viene passato senza altri parametri. Nel caso in cui venissero specificati più parametri il programma considererà automaticamente errato il codice inserito.
 \item Il trasferimento dei parametri alle funzioni avviene mescolando registri e memoria, senza utilizzare uno standard preciso (per quanto il registro utilizzato sia sempre \texttt{\%eax} e la sezione di memoria sia sempre lo stack) ma ricorrendo alla tecnica migliore per ottimizzare le operazioni all'interno della funzione
 \item Non essendo pensate per essere generali e riutilizzabili, le funzioni in questo progetto NON garantiscono che, una volta restituito il controllo al chiamante, i registri siano nello stato di partenza. Il compito di effettuare un backup dei valori indispensabili sullo stack è quindi lasciato al chiamante.
 \item L'implementazione in C del programma non fa uso di \texttt{stdio} e di altre astrazioni normalmente utilizzate. Questo con lo scopo di calcare quanto più possibile il comportamento della versione Assembly, riducendo la distanza tra le due implementazioni per consentire di usare la versione C come una sorta di traduzione in linguaggio umano di quella Assembly.
-\item Il programma verifica il codice supervisore solo se questo viene passato senza altri parametri. Nel caso in cui venissero specificati più parametri il programma considererà automaticamente errato il codice inserito.
 \end{itemize}
 
 \end{document}
